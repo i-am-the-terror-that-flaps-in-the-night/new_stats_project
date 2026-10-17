@@ -18,3 +18,13 @@ dependencies = [
     "seaborn>=0.13.2",
     "statsmodels>=0.15.0",
 ]
+
+# Installs the analysis package into .venv so `import analysis` works from any folder
+[build-system]
+requires = ["uv_build>=0.12,<0.13"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "analysis"
+module-root = ""
+namespace = true

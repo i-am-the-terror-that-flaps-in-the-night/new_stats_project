@@ -1,11 +1,28 @@
-from pathlib import Path
-
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2]
+from analysis.paths import DATA_DIR
 
 # NHANES "refused" / "don't know" codes for the activity questions
 PAQ_MISSING_CODES = [77, 99]
+
+# BMI z-scores further than this from 0 are treated as measurement errors
+MAX_ABS_BMI_Z = 5
+
+
+def bmi_z_score(df):
+    # CDC 2000 growth charts: BMI-for-age z-score from the LMS table for each sex
+    # and age in months. The table lists ages at the middle of each month (24.5,
+    # 25.5, ...), so add 0.5 to the completed months NHANES gives at the exam.
+    lms = pd.read_csv(DATA_DIR / "reference" / "cdc_bmiagerev.csv")
+    ref = df[["RIAGENDR", "RIDEXAGM"]].assign(Agemos=df["RIDEXAGM"] + 0.5)
+    ref = ref.merge(lms, left_on=["RIAGENDR", "Agemos"], right_on=["Sex", "Agemos"], how="left")
+    ref.index = df.index
+
+    L, M, S = ref["L"], ref["M"], ref["S"]
+    z = ((df["BMXBMI"] / M) ** L - 1) / (L * S)
+
+    # Impossibly low or high values are set to missing, not dropped
+    return z.mask(z.abs() > MAX_ABS_BMI_Z)
 
 
 def clean(df):
@@ -18,11 +35,14 @@ def clean(df):
     for col in ["PAQ710", "PAQ715"]:
         df[col] = df[col].mask(df[col].isin(PAQ_MISSING_CODES)).replace({8: 0})
 
-    return df
+    # Days active in the past week (0-7); refused / don't know are missing
+    df["PAQ706"] = df["PAQ706"].mask(df["PAQ706"].isin(PAQ_MISSING_CODES))
+
+    return pd.concat([df, bmi_z_score(df).rename("BMI_Z")], axis=1)
 
 
 def data_cutting(age_min=12, age_max=17, min_valid_scans=10, max_iqr_ratio=30):
-    df = pd.read_parquet(ROOT / "data" / "merged" / "nhanes_J.parquet")
+    df = pd.read_parquet(DATA_DIR / "merged" / "nhanes_J.parquet")
     df = clean(df)
 
     # Records how many people are left after each step
@@ -40,10 +60,10 @@ def data_cutting(age_min=12, age_max=17, min_valid_scans=10, max_iqr_ratio=30):
 
     # Hepatitis cut: only drop confirmed positives, keep people who weren't tested
     hep_positive = (
-        (df["LBXHBC"] == 1)    # Hep B core antibody (past/current infection)
-        | (df["LBDHBG"] == 1)  # Hep B surface antigen (active infection)
-        | (df["LBDHCI"].isin([1, 4]))  # Hep C antibody confirmed positive (4 = HCV RNA positive)
-        | (df["LBXHCR"] == 1)  # Hep C RNA (active infection)
+            (df["LBXHBC"] == 1)  # Hep B core antibody (past/current infection)
+            | (df["LBDHBG"] == 1)  # Hep B surface antigen (active infection)
+            | (df["LBDHCI"].isin([1, 4]))  # Hep C antibody confirmed positive (4 = HCV RNA positive)
+            | (df["LBXHCR"] == 1)  # Hep C RNA (active infection)
     )
     df = step("No hepatitis B or C", df[~hep_positive])
 
@@ -54,21 +74,24 @@ def data_cutting(age_min=12, age_max=17, min_valid_scans=10, max_iqr_ratio=30):
         (df["LUAXSTAT"] == 1)
         & (df["LUANMVGP"] >= min_valid_scans)
         & (df["LUXSIQRM"] < max_iqr_ratio)
-    ]
+        ]
     scan = step("Scan sample", scan)
 
-    # Screening sample: scan sample with ALT, BMI and waist
+    # Screening sample: scan sample with CAP, ALT, BMI and waist. One teen has a
+    # complete scan but no CAP reading.
     screening = step(
-        "Screening sample (scan + ALT, BMI, waist)",
-        scan.dropna(subset=["LBXSATSI", "BMXBMI", "BMXWAIST"]),
+        "Screening sample (scan + CAP, ALT, BMI, waist)",
+        scan.dropna(subset=["LUXCAPM", "LBXSATSI", "BMXBMI", "BMXWAIST"]),
     )
 
     # Diet sample: scan sample with a reliable day 1 food recall
     diet = scan[(scan["DR1DRSTZ"] == 1) & scan["DR1TSUGR"].notna()]
     diet = step("Diet sample (scan + reliable day 1 recall)", diet)
 
-    # Fasting sample: diet sample in the morning fasting group with insulin and glucose
-    fasting = diet[(diet["WTSAF2YR"] > 0)].dropna(subset=["LBXIN", "LBXGLU"])
+    # Fasting sample: diet sample in the morning fasting group with insulin and glucose.
+    # A few of these teens have a fasting weight of 0, so they count toward n but
+    # add nothing to weighted estimates.
+    fasting = diet.dropna(subset=["LBXIN", "LBXGLU"])
     fasting = step("Fasting sample (diet + insulin, glucose)", fasting)
 
     for label, n in flow:

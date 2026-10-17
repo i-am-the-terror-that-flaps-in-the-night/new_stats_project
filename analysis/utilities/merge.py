@@ -1,9 +1,6 @@
-from pathlib import Path
-
 import pandas as pd
 
-# Sets path so script can be run from anywhere
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+from analysis.paths import DATA_DIR
 
 PARQUET = DATA_DIR / "parquet"
 OUT = DATA_DIR / "merged"
