@@ -5,8 +5,10 @@ from analysis.paths import DATA_DIR
 # NHANES "refused" / "don't know" codes for the activity questions
 PAQ_MISSING_CODES = [77, 99]
 
-# BMI z-scores further than this from 0 are treated as measurement errors
-MAX_ABS_BMI_Z = 5
+# BMI z-scores below -4 or above 8 are treated as measurement errors (the CDC's
+# cutoffs for biologically implausible BMI, and the rule in the analysis plan)
+BMI_Z_MIN = -4
+BMI_Z_MAX = 8
 
 
 def bmi_z_score(df):
@@ -22,7 +24,7 @@ def bmi_z_score(df):
     z = ((df["BMXBMI"] / M) ** L - 1) / (L * S)
 
     # Impossibly low or high values are set to missing, not dropped
-    return z.mask(z.abs() > MAX_ABS_BMI_Z)
+    return z.mask((z < BMI_Z_MIN) | (z > BMI_Z_MAX))
 
 
 def clean(df):
@@ -58,7 +60,16 @@ def data_cutting(age_min=12, age_max=17, min_valid_scans=10, max_iqr_ratio=30):
     # Age cut
     df = step(f"Age {age_min}-{age_max}", df[df["RIDAGEYR"].between(age_min, age_max)])
 
-    # Hepatitis cut: only drop confirmed positives, keep people who weren't tested
+    # Hepatitis cut: only drop confirmed positives, keep people who weren't tested.
+    #
+    # This is STRICTER than the analysis plan, which excludes only active infection
+    # (Hep B surface antigen positive, or confirmed Hep C). The core-antibody line
+    # (LBXHBC) also drops teens who had Hep B in the past and cleared it. Kept on
+    # purpose as the conservative choice: a past infection can leave lasting liver
+    # damage, and a few people still carry low levels of the virus, either of which
+    # could affect the liver scan. In 2017-2018 it removes one teen with a valid
+    # scan (SEQN 95293: core antibody positive, surface antigen negative).
+    # This must be listed in the dated Research Plan addendum.
     hep_positive = (
             (df["LBXHBC"] == 1)  # Hep B core antibody (past/current infection)
             | (df["LBDHBG"] == 1)  # Hep B surface antigen (active infection)
@@ -74,25 +85,31 @@ def data_cutting(age_min=12, age_max=17, min_valid_scans=10, max_iqr_ratio=30):
         (df["LUAXSTAT"] == 1)
         & (df["LUANMVGP"] >= min_valid_scans)
         & (df["LUXSIQRM"] < max_iqr_ratio)
+        # CAP (the liver-fat number) must be present. One teen has a complete scan
+        # but no CAP reading, and can't be in any liver-fat analysis.
+        & df["LUXCAPM"].notna()
         ]
     scan = step("Scan sample", scan)
 
-    # Screening sample: scan sample with CAP, ALT, BMI and waist. One teen has a
-    # complete scan but no CAP reading.
+    # Screening sample: scan sample with ALT, a usable BMI z-score and waist.
+    # Uses BMI_Z, not BMXBMI, so a teen whose z-score was set to missing as
+    # implausible is left out (weight groups come from the z-score).
     screening = step(
-        "Screening sample (scan + CAP, ALT, BMI, waist)",
-        scan.dropna(subset=["LUXCAPM", "LBXSATSI", "BMXBMI", "BMXWAIST"]),
+        "Screening sample (scan + ALT, BMI z-score, waist)",
+        scan.dropna(subset=["LBXSATSI", "BMI_Z", "BMXWAIST"]),
     )
 
     # Diet sample: scan sample with a reliable day 1 food recall
     diet = scan[(scan["DR1DRSTZ"] == 1) & scan["DR1TSUGR"].notna()]
     diet = step("Diet sample (scan + reliable day 1 recall)", diet)
 
-    # Fasting sample: diet sample in the morning fasting group with insulin and glucose.
-    # A few of these teens have a fasting weight of 0, so they count toward n but
-    # add nothing to weighted estimates.
-    fasting = diet.dropna(subset=["LBXIN", "LBXGLU"])
-    fasting = step("Fasting sample (diet + insulin, glucose)", fasting)
+    # Fasting sample: diet sample in the morning fasting group with insulin, glucose
+    # and a BMI z-score (the primary model uses it). Teens with a fasting weight of 0
+    # (they didn't meet NHANES's fasting rules) are dropped: they add nothing to
+    # weighted estimates, so counting them would overstate n.
+    fasting = diet.dropna(subset=["LBXIN", "LBXGLU", "BMI_Z"])
+    fasting = fasting[fasting["WTSAF2YR"] > 0]
+    fasting = step("Fasting sample (diet + insulin, glucose, BMI z, weight > 0)", fasting)
 
     for label, n in flow:
         print(f"{label:<45} {n:>6,}")
