@@ -12,3 +12,4 @@ wheels/
 # OS / editor files
 .DS_Store
 .idea/
+.vscode/
