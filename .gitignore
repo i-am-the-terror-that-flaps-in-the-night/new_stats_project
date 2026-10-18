@@ -14,3 +14,4 @@ wheels/
 .idea/
 .vscode/
 data/
+output/
