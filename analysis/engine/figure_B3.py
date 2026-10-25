@@ -6,7 +6,7 @@ from analysis.engine.table_B2 import WEIGHT, WEIGHT_GROUP_B2
 from analysis.paths import ROOT
 from analysis.utilities.cleaning import data_cutting
 
-OUTPUT = ROOT / "output" / "figure_B3.png"
+OUTPUT = ROOT / "output" / "figure_B3.svg"
 
 # Bars, top to bottom: label and whether the teen has liver fat
 ROWS = [("Teens with\nliver fat", 1.0), ("Teens without\nliver fat", 0.0)]
