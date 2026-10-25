@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from analysis.engine.table_B1 import add_variables
+from analysis.engine.table_B2 import WEIGHT, WEIGHT_GROUP_B2
 from analysis.paths import ROOT
-from analysis.tables.cohort import add_variables
-from analysis.tables.national import WEIGHT, WEIGHT_GROUP_B2
 from analysis.utilities.cleaning import data_cutting
 
 OUTPUT = ROOT / "output" / "figure_B3.png"

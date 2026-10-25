@@ -1,7 +1,7 @@
 import pandas as pd
 
+from analysis.engine.table_B1 import RACE, add_variables
 from analysis.paths import DATA_DIR, ROOT
-from analysis.tables.cohort import RACE, add_variables
 from analysis.utilities.cleaning import clean, data_cutting
 from analysis.utilities.survey import design_psus, mean_ci
 
