@@ -93,3 +93,36 @@ def mean_ci(df, col, weight, in_group, psus, level=0.95):
     se = np.sqrt(linearized_cov(df, z[:, None], psus)[0, 0])
     t = stats.t.ppf(0.5 + level / 2, design_df(psus))
     return mean, mean - t * se, mean + t * se
+
+
+def regression(df, outcome, predictors, weight, psus, level=0.95):
+    # Survey-weighted linear regression of `outcome` on `predictors` (columns of
+    # df), with an intercept. Teens missing any of them are left out of the fit
+    # but kept in df, so their PSUs still count in the variance (domain
+    # estimation, as in design_psus). Standard errors are the Taylor-linearized
+    # sandwich; CIs and p-values use the design degrees of freedom.
+    # Returns one row per predictor (estimate, CI, p) plus the fit's n and R².
+    cols = [outcome, *predictors]
+    used = df[cols].notna().all(axis=1) & (df[weight] > 0)
+    X = np.column_stack([np.ones(len(df)), df[predictors].astype(float).fillna(0)])
+    y = df[outcome].astype(float).fillna(0).to_numpy()
+    w = df[weight].where(used, 0).to_numpy()
+
+    bread = np.linalg.inv(X.T @ (w[:, None] * X))
+    beta = bread @ X.T @ (w * y)
+    resid = y - X @ beta
+    # Each teen's influence on the coefficients (zero for teens not in the fit)
+    influence = (w * resid)[:, None] * X @ bread
+    se = np.sqrt(np.diag(linearized_cov(df, influence, psus)))
+
+    dof = design_df(psus)
+    t = stats.t.ppf(0.5 + level / 2, dof)
+    p = 2 * stats.t.sf(np.abs(beta / se), dof)
+    coefs = pd.DataFrame(
+        {"estimate": beta, "low": beta - t * se, "high": beta + t * se, "p": p},
+        index=["Intercept", *predictors],
+    ).drop("Intercept")
+
+    ybar = np.average(y, weights=w)
+    r2 = 1 - np.sum(w * resid**2) / np.sum(w * (y - ybar) ** 2)
+    return coefs, {"n": int(used.sum()), "r2": r2}
