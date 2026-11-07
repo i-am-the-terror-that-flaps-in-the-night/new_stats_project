@@ -101,7 +101,8 @@ def regression(df, outcome, predictors, weight, psus, level=0.95):
     # but kept in df, so their PSUs still count in the variance (domain
     # estimation, as in design_psus). Standard errors are the Taylor-linearized
     # sandwich; CIs and p-values use the design degrees of freedom.
-    # Returns one row per predictor (estimate, CI, p) plus the fit's n and R².
+    # Returns one row per predictor (estimate, CI, p) plus the fit's n, R², and
+    # the p-value of the overall test that every predictor's effect is zero.
     cols = [outcome, *predictors]
     used = df[cols].notna().all(axis=1) & (df[weight] > 0)
     X = np.column_stack([np.ones(len(df)), df[predictors].astype(float).fillna(0)])
@@ -113,7 +114,8 @@ def regression(df, outcome, predictors, weight, psus, level=0.95):
     resid = y - X @ beta
     # Each teen's influence on the coefficients (zero for teens not in the fit)
     influence = (w * resid)[:, None] * X @ bread
-    se = np.sqrt(np.diag(linearized_cov(df, influence, psus)))
+    cov = linearized_cov(df, influence, psus)
+    se = np.sqrt(np.diag(cov))
 
     dof = design_df(psus)
     t = stats.t.ppf(0.5 + level / 2, dof)
@@ -125,4 +127,12 @@ def regression(df, outcome, predictors, weight, psus, level=0.95):
 
     ybar = np.average(y, weights=w)
     r2 = 1 - np.sum(w * resid**2) / np.sum(w * (y - ybar) ** 2)
-    return coefs, {"n": int(used.sum()), "r2": r2}
+
+    # Overall test: adjusted Wald F on every slope at once (the intercept is
+    # left out), as in compare_categories
+    slopes = beta[1:]
+    wald = slopes @ np.linalg.solve(cov[1:, 1:], slopes)
+    q = len(slopes)
+    f = wald * (dof - q + 1) / (dof * q)
+    overall_p = stats.f.sf(f, q, dof - q + 1)
+    return coefs, {"n": int(used.sum()), "r2": r2, "p": overall_p}
