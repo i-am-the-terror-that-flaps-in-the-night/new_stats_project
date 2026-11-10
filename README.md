@@ -15,8 +15,8 @@ analysis/                  Python package (installed into .venv, so `import anal
     survey.py              Survey-weighted means, CIs, regressions
   engine/                  One script per table/figure, named by its label
     main.py                Write the cleaned study samples to output/cleaned/
-    table_B*.py            Tables → output/tables/
-    figure_A*.py, figure_B*.py   Figures → output/figures/
+    tables/table_B*.py     Tables → output/tables/
+    figures/figure_*.py    Figures → output/figures/
     all_results.ipynb      Every table and figure, one per cell
 
 data/                      (not in git)
@@ -36,8 +36,8 @@ output/                    (not in git)
 Run any script as a module from the project root, for example:
 
 ```sh
-.venv/bin/python -m analysis.engine.table_B1
-.venv/bin/python -m analysis.engine.figure_A1
+.venv/bin/python -m analysis.engine.tables.table_B1
+.venv/bin/python -m analysis.engine.figures.figure_A1
 .venv/bin/python -m analysis.engine.main        # write the cleaned samples
 ```
 

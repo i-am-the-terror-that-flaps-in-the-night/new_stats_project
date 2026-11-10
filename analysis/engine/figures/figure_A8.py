@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from analysis.engine.table_B1 import add_variables, format_p
-from analysis.engine.table_B2 import WEIGHT
+from analysis.engine.tables.table_B1 import add_variables, format_p
+from analysis.engine.tables.table_B2 import WEIGHT
 from analysis.paths import FIGURES_DIR, ROOT
 from analysis.utilities.cleaning import data_cutting
 from analysis.utilities.survey import compare_means, design_psus

@@ -1,7 +1,7 @@
 import pandas as pd
 
-from analysis.engine.table_B1 import CAP_FAT
-from analysis.engine.table_B6 import MODELS, OUTCOME, SUGAR_UNIT, model_variables
+from analysis.engine.tables.table_B1 import CAP_FAT
+from analysis.engine.tables.table_B6 import MODELS, OUTCOME, SUGAR_UNIT, model_variables
 from analysis.paths import ROOT, TABLES_DIR
 from analysis.utilities.cleaning import data_cutting
 from analysis.utilities.survey import design_psus, regression, weighted_mean_sd

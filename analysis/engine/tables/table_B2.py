@@ -1,6 +1,6 @@
 import pandas as pd
 
-from analysis.engine.table_B1 import RACE, add_variables
+from analysis.engine.tables.table_B1 import RACE, add_variables
 from analysis.paths import DATA_DIR, ROOT, TABLES_DIR
 from analysis.utilities.cleaning import clean, data_cutting
 from analysis.utilities.survey import design_psus, mean_ci

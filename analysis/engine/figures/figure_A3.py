@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
-from analysis.engine.table_B2 import examined_teens
+from analysis.engine.tables.table_B2 import examined_teens
 from analysis.paths import FIGURES_DIR, ROOT
 from analysis.utilities.cleaning import data_cutting
 

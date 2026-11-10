@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from analysis.engine.table_B1 import CAP_FAT, add_variables
-from analysis.engine.table_B2 import WEIGHT, groups
+from analysis.engine.tables.table_B1 import CAP_FAT, add_variables
+from analysis.engine.tables.table_B2 import WEIGHT, groups
 from analysis.paths import FIGURES_DIR, ROOT
 from analysis.utilities.cleaning import data_cutting
 from analysis.utilities.survey import design_psus, mean_ci
@@ -34,8 +34,18 @@ def liver_fat_by_group(samples=None):
     df = add_variables(samples["screening"])
     rows = []
     for label, in_group in groups(df):
-        mean, low, high = (100 * x for x in mean_ci(df, "LIVER_FAT", WEIGHT, in_group, psus))
-        rows.append({"group": label, "n": in_group.sum(), "fat": mean, "low": max(low, 0), "high": high})
+        mean, low, high = (
+            100 * x for x in mean_ci(df, "LIVER_FAT", WEIGHT, in_group, psus)
+        )
+        rows.append(
+            {
+                "group": label,
+                "n": in_group.sum(),
+                "fat": mean,
+                "low": max(low, 0),
+                "high": high,
+            }
+        )
     return pd.DataFrame(rows).set_index("group")
 
 
@@ -47,10 +57,21 @@ def figure_a1(samples=None):
     names, colours = zip(*(BARS[group] for group in shares.index))
     err = [shares["fat"] - shares["low"], shares["high"] - shares["fat"]]
     ax.bar(x, shares["fat"], color=colours, width=0.75)
-    ax.errorbar(x, shares["fat"], yerr=err, fmt="none", ecolor="#333333", elinewidth=1, capsize=3)
+    ax.errorbar(
+        x,
+        shares["fat"],
+        yerr=err,
+        fmt="none",
+        ecolor="#333333",
+        elinewidth=1,
+        capsize=3,
+    )
     ax.set_xticks(list(x), names, rotation=30, ha="right", fontsize=8)
     ax.set_ylabel(f"Weighted % with CAP ≥{CAP_FAT}", fontsize=10)
-    ax.set_title(f"Liver fat (CAP ≥{CAP_FAT}) among U.S. adolescents 12–17, by group (95% CI)", fontsize=10)
+    ax.set_title(
+        f"Liver fat (CAP ≥{CAP_FAT}) among U.S. adolescents 12–17, by group (95% CI)",
+        fontsize=10,
+    )
     ax.spines[["top", "right"]].set_visible(False)
 
     fig.tight_layout()
