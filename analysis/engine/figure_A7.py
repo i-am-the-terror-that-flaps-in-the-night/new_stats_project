@@ -4,10 +4,10 @@ import pandas as pd
 
 from analysis.engine.table_B1 import format_p
 from analysis.engine.table_B6 import MODELS, fit_models
-from analysis.paths import ROOT
+from analysis.paths import FIGURES_DIR, ROOT
 from analysis.utilities.cleaning import data_cutting
 
-OUTPUT = ROOT / "output" / "figure_A7.svg"
+OUTPUT = FIGURES_DIR / "figure_A7.svg"
 
 # The final model: Model B with BMI, the one with the promised sugar test
 FINAL = MODELS[2][0]

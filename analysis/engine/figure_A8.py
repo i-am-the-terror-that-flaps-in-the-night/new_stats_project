@@ -4,11 +4,11 @@ import pandas as pd
 
 from analysis.engine.table_B1 import add_variables, format_p
 from analysis.engine.table_B2 import WEIGHT
-from analysis.paths import ROOT
+from analysis.paths import FIGURES_DIR, ROOT
 from analysis.utilities.cleaning import data_cutting
 from analysis.utilities.survey import compare_means, design_psus
 
-OUTPUT = ROOT / "output" / "figure_A8.svg"
+OUTPUT = FIGURES_DIR / "figure_A8.svg"
 
 # Rows, top to bottom: label, column, decimals, and which measurement it comes
 # from ("exam" = body measurements, DXA and blood tests; "fasting"; "diet").

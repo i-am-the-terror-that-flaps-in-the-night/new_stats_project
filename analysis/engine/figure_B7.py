@@ -4,11 +4,11 @@ import pandas as pd
 
 from analysis.engine.table_B1 import CAP_FAT, format_p
 from analysis.engine.table_B6 import MODELS, model_variables
-from analysis.paths import ROOT
+from analysis.paths import FIGURES_DIR, ROOT
 from analysis.utilities.cleaning import data_cutting
 from analysis.utilities.survey import design_psus, mean_ci, regression
 
-OUTPUT = ROOT / "output" / "figure_B7.svg"
+OUTPUT = FIGURES_DIR / "figure_B7.svg"
 
 WEIGHT = "WTDRD1"  # day 1 diet weight: the quarters come from the diet sample
 SUGAR = "DR1TSUGR"

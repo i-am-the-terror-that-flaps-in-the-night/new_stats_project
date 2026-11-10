@@ -4,11 +4,11 @@ import pandas as pd
 
 from analysis.engine.table_B1 import CAP_FAT, add_variables, format_p
 from analysis.engine.table_B2 import WEIGHT
-from analysis.paths import ROOT
+from analysis.paths import FIGURES_DIR, ROOT
 from analysis.utilities.cleaning import data_cutting
 from analysis.utilities.survey import design_psus, mean_ci, regression
 
-OUTPUT = ROOT / "output" / "figure_B11.svg"
+OUTPUT = FIGURES_DIR / "figure_B11.svg"
 
 VISCERAL = "DXXVFATM"  # visceral (belly) fat mass from the DXA scan, grams
 DXA_VALID = 1  # DXXAGST: 1 = valid abdominal scan

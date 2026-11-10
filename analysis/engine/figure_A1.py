@@ -3,11 +3,11 @@ import pandas as pd
 
 from analysis.engine.table_B1 import CAP_FAT, add_variables
 from analysis.engine.table_B2 import WEIGHT, groups
-from analysis.paths import ROOT
+from analysis.paths import FIGURES_DIR, ROOT
 from analysis.utilities.cleaning import data_cutting
 from analysis.utilities.survey import design_psus, mean_ci
 
-OUTPUT = ROOT / "output" / "figure_A1.svg"
+OUTPUT = FIGURES_DIR / "figure_A1.svg"
 
 # Short bar labels for Table B2's groups, and a colour for each block: everyone
 # (navy), sex (blue), weight group (green / yellow / orange), race (light blue)

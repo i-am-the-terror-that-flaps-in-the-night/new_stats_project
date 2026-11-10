@@ -3,10 +3,10 @@ import pandas as pd
 
 from analysis.engine.table_B1 import format_p
 from analysis.engine.table_B6 import MODELS, fit_models
-from analysis.paths import ROOT
+from analysis.paths import FIGURES_DIR, ROOT
 from analysis.utilities.cleaning import data_cutting
 
-OUTPUT = ROOT / "output" / "figure_B5.svg"
+OUTPUT = FIGURES_DIR / "figure_B5.svg"
 
 # Rows, top to bottom: label, model name (from Table B6), and whether sugar and
 # calories are the two-day average (the S1 check) instead of day 1 only

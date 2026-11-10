@@ -1,11 +1,11 @@
 import pandas as pd
 
 from analysis.engine.table_B1 import RACE, add_variables
-from analysis.paths import DATA_DIR, ROOT
+from analysis.paths import DATA_DIR, ROOT, TABLES_DIR
 from analysis.utilities.cleaning import clean, data_cutting
 from analysis.utilities.survey import design_psus, mean_ci
 
-OUTPUT = ROOT / "output" / "table_B2.csv"
+OUTPUT = TABLES_DIR / "table_B2.csv"
 
 WEIGHT = "WTMEC2YR"  # exam weight: the screening sample comes from the exam
 

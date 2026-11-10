@@ -15,3 +15,7 @@ wheels/
 .vscode/
 data/
 output/
+
+# Jupyter state
+.ipynb_checkpoints/
+.jupyter/

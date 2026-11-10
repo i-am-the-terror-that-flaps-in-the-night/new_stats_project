@@ -2,11 +2,11 @@ import pandas as pd
 
 from analysis.engine.table_B1 import add_variables
 from analysis.engine.table_B2 import WEIGHT, examined_teens
-from analysis.paths import ROOT
+from analysis.paths import ROOT, TABLES_DIR
 from analysis.utilities.cleaning import data_cutting
 from analysis.utilities.survey import design_psus, mean_ci
 
-OUTPUT = ROOT / "output" / "table_B4.csv"
+OUTPUT = TABLES_DIR / "table_B4.csv"
 
 # Waist-to-height ratio at or above this counts as belly fat
 WHTR_HIGH = 0.5

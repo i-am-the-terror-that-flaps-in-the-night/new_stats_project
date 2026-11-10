@@ -2,11 +2,11 @@ import numpy as np
 import pandas as pd
 
 from analysis.engine.table_B1 import RACE, add_variables, format_p
-from analysis.paths import ROOT
+from analysis.paths import ROOT, TABLES_DIR
 from analysis.utilities.cleaning import data_cutting
 from analysis.utilities.survey import design_psus, regression
 
-OUTPUT = ROOT / "output" / "table_B6.csv"
+OUTPUT = TABLES_DIR / "table_B6.csv"
 
 OUTCOME = "LUXCAPM"  # liver fat, CAP (dB/m)
 

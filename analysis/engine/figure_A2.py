@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
-from analysis.paths import ROOT
+from analysis.paths import FIGURES_DIR, ROOT
 
-OUTPUT = ROOT / "output" / "figure_A2.svg"
+OUTPUT = FIGURES_DIR / "figure_A2.svg"
 
 # A diagram of how NHANES works, not a result: nothing here comes from the data.
 # Each step: heading, what happens, and a fill colour (blues darkening toward

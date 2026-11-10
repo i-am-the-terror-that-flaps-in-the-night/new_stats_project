@@ -2,11 +2,11 @@ import pandas as pd
 
 from analysis.engine.table_B1 import CAP_FAT
 from analysis.engine.table_B6 import MODELS, OUTCOME, SUGAR_UNIT, model_variables
-from analysis.paths import ROOT
+from analysis.paths import ROOT, TABLES_DIR
 from analysis.utilities.cleaning import data_cutting
 from analysis.utilities.survey import design_psus, regression, weighted_mean_sd
 
-OUTPUT = ROOT / "output" / "table_B9.csv"
+OUTPUT = TABLES_DIR / "table_B9.csv"
 
 # The primary test: sugar in Model B with BMI
 PRIMARY, SAMPLE, WEIGHT, PREDICTORS = MODELS[2]

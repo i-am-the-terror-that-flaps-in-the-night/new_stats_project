@@ -2,11 +2,11 @@ import matplotlib.pyplot as plt
 
 from analysis.engine.table_B1 import ALT_HIGH, CAP_FAT, add_variables
 from analysis.engine.table_B2 import WEIGHT
-from analysis.paths import ROOT
+from analysis.paths import FIGURES_DIR, ROOT
 from analysis.utilities.cleaning import data_cutting
 from analysis.utilities.survey import design_psus, mean_ci
 
-OUTPUT = ROOT / "output" / "figure_A5.svg"
+OUTPUT = FIGURES_DIR / "figure_A5.svg"
 
 # Dot colour by weight group (underweight folded into healthy weight)
 GROUPS = {"Healthy weight": "#70ad47", "Overweight": "#ffc000", "Obesity": "#ed7d31"}

@@ -2,10 +2,10 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 from analysis.engine.table_B2 import examined_teens
-from analysis.paths import ROOT
+from analysis.paths import FIGURES_DIR, ROOT
 from analysis.utilities.cleaning import data_cutting
 
-OUTPUT = ROOT / "output" / "figure_A3.svg"
+OUTPUT = FIGURES_DIR / "figure_A3.svg"
 
 # Medium blue for the steps on the way, navy for the two samples the results use
 STEP, SAMPLE, EDGE, GREY = "#2e75b6", "#1f4e79", "#1f4e79", "#444444"

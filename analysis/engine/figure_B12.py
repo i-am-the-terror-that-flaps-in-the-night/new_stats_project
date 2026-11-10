@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
-from analysis.paths import ROOT
+from analysis.paths import FIGURES_DIR, ROOT
 
-OUTPUT = ROOT / "output" / "figure_B12.svg"
+OUTPUT = FIGURES_DIR / "figure_B12.svg"
 
 # A diagram of the biology, not a result: nothing here comes from the data.
 # Each box: centre (x, y), width, height, text, what measured it (None if we

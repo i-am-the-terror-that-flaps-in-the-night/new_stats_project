@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from analysis.paths import ROOT
+from analysis.paths import ROOT, TABLES_DIR
 from analysis.utilities.cleaning import data_cutting
 from analysis.utilities.survey import (
     compare_categories,
@@ -11,7 +11,7 @@ from analysis.utilities.survey import (
     weighted_mean_sd,
 )
 
-OUTPUT = ROOT / "output" / "table_B1.csv"
+OUTPUT = TABLES_DIR / "table_B1.csv"
 
 # Liver fat and stiffness cutoffs used throughout the results
 CAP_FAT = 248  # dB/m
