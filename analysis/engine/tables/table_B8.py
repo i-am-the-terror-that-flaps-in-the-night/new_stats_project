@@ -59,6 +59,23 @@ def model_fit(samples=None):
     return fits
 
 
+def text_numbers(samples=None):
+    # Two numbers the text under Table B8 quotes. In the poster model: does the
+    # sugar effect differ for boys and girls (p of a sugar x boy interaction)?
+    # And how much of the variation in ALT (logged) the same model explains,
+    # to compare with liver fat.
+    if samples is None:
+        samples = data_cutting()
+    psus = design_psus()
+    _, sample, weight, predictors = MODELS[2]
+    df = model_variables(samples[sample])
+    df["SUGAR_BOY"] = df["SUGAR"] * df["BOY"]
+    coefs, _ = regression(df, OUTCOME, [*predictors, "SUGAR_BOY"], weight, psus)
+    df["LOG_ALT"] = np.log(df["LBXSATSI"])
+    _, alt = regression(df, "LOG_ALT", predictors, weight, psus)
+    return coefs.loc["SUGAR_BOY", "p"], alt["r2"]
+
+
 def table_b8(samples=None):
     fits = model_fit(samples)
     rows = [
@@ -81,4 +98,8 @@ if __name__ == "__main__":
     table.to_csv(OUTPUT, index=False)
     with pd.option_context("display.width", 250):
         print(table.to_string(index=False))
+    interaction, alt_r2 = text_numbers()
+    print(f"\nThe models explain up to {100 * float(table.iloc[1, -1]):.0f}% of the variation in liver fat; the poster model "
+          f"explains {100 * alt_r2:.0f}% of ALT. Boys vs. girls: the sugar effect did not differ "
+          f"(interaction p = {format_p(interaction)}).")
     print(f"\nWrote {OUTPUT.relative_to(ROOT)}")

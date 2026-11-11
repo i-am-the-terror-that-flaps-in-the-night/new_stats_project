@@ -12,10 +12,10 @@ analysis/                  Python package (installed into .venv, so `import anal
     convert_xpt.py         1. Convert downloaded .xpt files → parquet/excel/csv
     merge.py               2. Merge per-file parquets → data/merged/nhanes_J.parquet
     cleaning.py            Clean the merged data and cut it into study samples (data_cutting())
-    survey.py              Survey-weighted means, CIs, regressions
+    survey.py              Survey-weighted means, CIs, linear and logistic regressions
   engine/                  One script per table/figure, named by its label
     main.py                Write the cleaned study samples to output/cleaned/
-    tables/table_B*.py     Tables → output/tables/
+    tables/table_*.py      Tables → output/tables/
     figures/figure_*.py    Figures → output/figures/
     all_results.ipynb      Every table and figure, one per cell
 

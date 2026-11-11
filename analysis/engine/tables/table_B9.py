@@ -53,8 +53,13 @@ if __name__ == "__main__":
     table.to_csv(OUTPUT, index=False)
     with pd.option_context("display.width", 250):
         print(table.to_string(index=False))
-    _, sd, mean, bmi = soda_scale(samples)
+    per_gram, sd, mean, bmi = soda_scale(samples)
     print(f"\nHow to read this: the spread (SD) of CAP is about {sd:.0f} dB/m, and the average teen "
           f"is {CAP_FAT - mean:.0f} dB/m below the cutoff. For comparison, one SD of BMI z-score "
           f"is worth about {bmi:.0f} dB/m.")
+    # Figure A7's text: at the best estimate, extra cans a day for the average
+    # teen to reach the liver-fat cutoff
+    per_can = 39 * per_gram["estimate"]
+    print(f"At the best estimate, an average teen would need about {(CAP_FAT - mean) / per_can:.0f} "
+          f"extra cans of soda a day to reach the liver-fat cutoff.")
     print(f"\nWrote {OUTPUT.relative_to(ROOT)}")

@@ -46,20 +46,22 @@ def measured(df):
     }
 
 
-def nonobese_comparison(samples=None):
+def nonobese_comparison(samples=None, rows=ROWS):
     # Teens without obesity who have a valid DXA scan, split by liver fat. For
     # each row: weighted mean with and without liver fat, teens in each, the %
-    # difference, and a design-based p-value
+    # difference, and a design-based p-value. `rows` defaults to the figure's
+    # rows; the full comparison table passes its own.
     if samples is None:
         samples = data_cutting()
     psus = design_psus()
     df = add_variables(samples["screening"])
+    df["HISPANIC"] = (df["RACE"] == "Hispanic").astype(float)
     domain = (df["WEIGHT_GROUP"] != "Obesity") & (df["DXXAGST"] == 1) & df["DXXVFATM"].notna()
     has_fat = df["LIVER_FAT"] == 1
     kinds = measured(df)
 
-    rows = []
-    for label, col, decimals, kind in ROWS:
+    results = []
+    for label, col, decimals, kind in rows:
         has_kind, weight = kinds[kind]
         # The measure outside this row's teens is set to missing, so only they
         # count, but every teen's PSU stays in the variance (domain estimation)
@@ -69,12 +71,12 @@ def nonobese_comparison(samples=None):
         for name, part in [("with", in_row & has_fat), ("without", in_row & ~has_fat)]:
             means[name] = np.average(df.loc[part, col], weights=df.loc[part, weight])
             means[f"n_{name}"] = part.sum()
-        rows.append({
+        results.append({
             "label": label, "decimals": decimals, **means,
             "diff_pct": 100 * (means["with"] / means["without"] - 1),
             "p": compare_means(df, "Y", weight, has_fat, psus),
         })
-    return pd.DataFrame(rows).set_index("label"), (domain & has_fat).sum(), (domain & ~has_fat).sum()
+    return pd.DataFrame(results).set_index("label"), (domain & has_fat).sum(), (domain & ~has_fat).sum()
 
 
 def figure_a8(samples=None):

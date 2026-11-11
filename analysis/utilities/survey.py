@@ -136,3 +136,41 @@ def regression(df, outcome, predictors, weight, psus, level=0.95):
     f = wald * (dof - q + 1) / (dof * q)
     overall_p = stats.f.sf(f, q, dof - q + 1)
     return coefs, {"n": int(used.sum()), "r2": r2, "p": overall_p}
+
+
+def logistic_regression(df, outcome, predictors, weight, psus, level=0.95, max_iter=50):
+    # Survey-weighted logistic regression of a yes/no `outcome` (1/0) on
+    # `predictors`, with an intercept. Same design handling as regression():
+    # teens missing anything are left out of the fit but kept for the variance.
+    # Fitted by iteratively reweighted least squares. Returns one row per
+    # predictor on the log-odds scale (estimate, CI, p): exp() them for odds
+    # ratios. The fit dict has n and the number of teens with the outcome.
+    cols = [outcome, *predictors]
+    used = df[cols].notna().all(axis=1) & (df[weight] > 0)
+    X = np.column_stack([np.ones(len(df)), df[predictors].astype(float).fillna(0)])
+    y = df[outcome].astype(float).fillna(0).to_numpy()
+    w = df[weight].where(used, 0).to_numpy()
+
+    beta = np.zeros(X.shape[1])
+    for _ in range(max_iter):
+        p = 1 / (1 + np.exp(-X @ beta))
+        bread = np.linalg.inv(X.T @ ((w * p * (1 - p))[:, None] * X))
+        step = bread @ X.T @ (w * (y - p))
+        beta = beta + step
+        if np.max(np.abs(step)) < 1e-10:
+            break
+    p = 1 / (1 + np.exp(-X @ beta))
+    bread = np.linalg.inv(X.T @ ((w * p * (1 - p))[:, None] * X))
+    # Each teen's influence on the coefficients (zero for teens not in the fit)
+    influence = (w * (y - p))[:, None] * X @ bread
+    cov = linearized_cov(df, influence, psus)
+    se = np.sqrt(np.diag(cov))
+
+    dof = design_df(psus)
+    t = stats.t.ppf(0.5 + level / 2, dof)
+    pval = 2 * stats.t.sf(np.abs(beta / se), dof)
+    coefs = pd.DataFrame(
+        {"estimate": beta, "low": beta - t * se, "high": beta + t * se, "p": pval},
+        index=["Intercept", *predictors],
+    ).drop("Intercept")
+    return coefs, {"n": int(used.sum()), "events": int((used & (y == 1)).sum())}
